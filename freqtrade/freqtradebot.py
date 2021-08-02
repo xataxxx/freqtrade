@@ -23,6 +23,7 @@ from freqtrade.exceptions import (DependencyException, ExchangeError, Insufficie
                                   InvalidOrderException, PricingError)
 from freqtrade.exchange import timeframe_to_minutes, timeframe_to_seconds
 from freqtrade.leverage import liquidation_price
+from freqtrade.maintenance_margin import MaintenanceMargin
 from freqtrade.misc import safe_value_fallback, safe_value_fallback2
 from freqtrade.mixins import LoggingMixin
 from freqtrade.persistence import Order, PairLocks, Trade, cleanup_db, init_db
@@ -127,6 +128,13 @@ class FreqtradeBot(LoggingMixin):
                 for minutes in [0, 15, 30, 45]:
                     t = str(time(time_slot, minutes, 2))
                     self._schedule.every().day.at(t).do(update)
+        # Start calculating maintenance margin if on cross margin
+        # TODO: Add margin_mode to freqtrade.configuration?
+        if self.config.get('collateral') == "cross":
+            self.maintenance_margin = MaintenanceMargin(
+                exchange_name=self.exchange.name,
+                trading_mode=self.trading_mode)
+            self.maintenance_margin.run
 
     def notify_status(self, msg: str) -> None:
         """
