@@ -2999,7 +2999,7 @@ def test_timeframe_to_next_date():
 def test_market_is_tradable(
         mocker, default_conf, market_symbol, base,
         quote, spot, margin, futures, trademode, add_dict, exchange, expected_result
-        ) -> None:
+) -> None:
     default_conf['trading_mode'] = trademode
     mocker.patch('freqtrade.exchange.exchange.Exchange.validate_trading_mode_and_collateral')
     ex = get_patched_exchange(mocker, default_conf, id=exchange)
@@ -3442,6 +3442,24 @@ def test_get_funding_rate_history(mocker, default_conf, funding_rate_history_hou
         "fetch_funding_rate_history",
         pair="ADA/USDT",
         since=1630454400000
+    )
+
+
+def test_get_liquidation_price(mocker, default_conf):
+
+    api_mock = MagicMock()
+    api_mock.fetch_positions = MagicMock()
+    type(api_mock).has = PropertyMock(return_value={'fetchPositions': True})
+    default_conf['dry_run'] = False
+
+    ccxt_exceptionhandlers(
+        mocker,
+        default_conf,
+        api_mock,
+        "binance",
+        "get_liquidation_price",
+        "fetch_positions",
+        pair="XRP/USDT"
     )
 
 

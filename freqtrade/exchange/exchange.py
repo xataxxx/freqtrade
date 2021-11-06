@@ -1934,7 +1934,7 @@ class Exchange:
     def get_liquidation_price(self, pair: str):
         '''
             Set's the margin mode on the exchange to cross or isolated for a specific pair
-            :param symbol: base/quote currency pair (e.g. "ADA/USDT")
+            :param pair: base/quote currency pair (e.g. "ADA/USDT")
         '''
         if self._config['dry_run'] or not self.exchange_has("fetchPositions"):
             # Some exchanges only support one collateral type
@@ -1949,6 +1949,14 @@ class Exchange:
                 f'Could not set margin mode due to {e.__class__.__name__}. Message: {e}') from e
         except ccxt.BaseError as e:
             raise OperationalException(e) from e
+
+    @retrier
+    def get_mm_amt_rate(self, pair: str, amount: float):
+        '''
+            :return: The maintenance amount, and maintenance margin rate
+        '''
+        # TODO-lev: return the real amounts
+        return 0, 0.4
 
 
 def is_exchange_known_ccxt(exchange_name: str, ccxt_module: CcxtModuleType = None) -> bool:
