@@ -181,7 +181,8 @@ class FreqtradeBot(LoggingMixin):
 
         # Check if we need to adjust our current positions before attempting to buy new trades.
         if self.strategy.position_adjustment_enable:
-            self.process_open_trade_positions()
+            with self._exit_lock:
+                self.process_open_trade_positions()
 
         # Then looking for buy opportunities
         if self.get_free_open_trades():
@@ -475,8 +476,8 @@ class FreqtradeBot(LoggingMixin):
         current_rate = self.exchange.get_rate(trade.pair, refresh=True, side="buy")
         current_profit = trade.calc_profit_ratio(current_rate)
 
-        # FIXME This is only here to lazyload orders.
-        trade.nr_of_successful_buys()
+        # TODO: Is there a better way to force lazy-load?
+        len(trade.orders)
         min_stake_amount = self.exchange.get_min_pair_stake_amount(trade.pair,
                                                                    current_rate,
                                                                    self.strategy.stoploss)
